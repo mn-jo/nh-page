@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>낙화 - 캐릭터챗 가이드</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 고풍스러운 블랙 + 네이비 블루 + 골드 테마 */
+        :root {
+            --bg-color: #050505;
+            --card-bg: #0b1320;
+            --card-hover: #121e33;
+            --text-color: #e6dfcc;
+            --accent-color: #cda434;
+            --border-color: #1e2a40;
+            --gold-border: #8b7355;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nanum Myeongjo', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-image: radial-gradient(circle at 50% 0%, #101622 0%, #050505 60%);
+            background-attachment: fixed;
+        }
+
+        header {
+            background-color: rgba(11, 19, 32, 0.9);
+            padding: 1rem 0;
+            text-align: center;
+            border-bottom: 2px solid var(--gold-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 15px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        nav button.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        nav button:hover {
+            color: var(--accent-color);
+            text-shadow: 0 0 8px rgba(205, 164, 52, 0.4);
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1.5rem 2rem 1.5rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .group-title {
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        
+        .group-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .char-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .char-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .char-card:hover {
+            background-color: var(--card-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+            border-color: var(--gold-border);
+        }
+
+        .char-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 4px;
+            object-fit: cover;
+            background-color: #1a1a1a;
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .char-info {
+            margin-left: 15px;
+        }
+
+        .char-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+
+        .char-short {
+            font-size: 0.95rem;
+            color: var(--accent-color);
+            margin: 0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 2px solid var(--gold-border);
+            border-radius: 4px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 4px; }
+        .modal-content::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 4px; }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-img-large {
+            width: 140px;
+            height: 140px;
+            border-radius: 4px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--gold-border);
+            padding: 4px;
+            background-color: var(--bg-color);
+        }
+
+        .modal-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+        .modal-short { color: var(--accent-color); font-weight: bold; font-size: 1.1rem; margin-bottom: 1.5rem; }
+        .modal-desc { 
+            font-size: 1rem; 
+            color: var(--text-color); 
+            line-height: 1.8; 
+            text-align: left; 
+            word-break: keep-all;
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 20px; 
+            border-radius: 4px; 
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .term-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 2px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .term-card:hover {
+            background-color: var(--card-hover);
+        }
+
+        .term-name { color: var(--accent-color); font-size: 1.3rem; font-weight: 800; margin-top: 0; margin-bottom: 10px; }
+        .term-desc { color: var(--text-color); line-height: 1.7; margin-bottom: 0; word-break: keep-all;}
+        
+        .map-placeholder {
+            width: 100%;
+            height: 400px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            color: #777;
+            font-size: 1.2rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <button class="active" onclick="switchTab('characters')">인물 (人物)</button>
+            <button onclick="switchTab('regions')">지역 (地域)</button>
+            <button onclick="switchTab('terms')">용어 (用語)</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="characters" class="section active">
+            <h2 class="group-title">주연</h2>
+            <div id="main-chars" class="char-grid"></div>
+
+            <h2 class="group-title">조연 (미나모토노 요리토모 측)</h2>
+            <div id="sub-chars-yoritomo" class="char-grid"></div>
+
+            <h2 class="group-title">조연 (미나모토노 요시츠네 측)</h2>
+            <div id="sub-chars-yoshitsune" class="char-grid"></div>
+            
+            <h2 class="group-title">조연 (조정 측)</h2>
+            <div id="sub-chars-court" class="char-grid"></div>
+        </section>
+
+        <section id="regions" class="section">
+            <h2 class="group-title">주요 지역 및 지도</h2>
+            <div style="margin-bottom: 2rem; text-align: center;">
+                <img src="https://raw.githubusercontent.com/mn-jo/nh/refs/heads/main/MAP-test1.webp" alt="오슈 및 간토 지도" style="width: 100%; border-radius: 4px; border: 2px solid var(--gold-border); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);">
+            </div>
+            <div id="regions-container"></div>
+        </section>
+
+        <section id="terms" class="section">
+            <div id="terms-container"></div>
+        </section>
+    </main>
+
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <img id="modal-img" class="modal-img-large" src="" alt="캐릭터 이미지">
+            <div id="modal-name" class="modal-name">이름</div>
+            <div id="modal-short" class="modal-short">1줄 설명</div>
+            <div id="modal-desc" class="modal-desc">상세 설명</div>
+        </div>
+    </div>
+
+    <script>
+        const getImgUrl = (code) => `https://raw.githubusercontent.com/mn-jo/nh/refs/heads/main/${code}-0.webp`;
+        const noImgUrl = 'https://via.placeholder.com/150/1a1a1a/cda434?text=無';
+
+        // ------------------ [인물 데이터] ------------------
+        const characters = [
+            // 주연
+            { id: 'MYT', name: '미나모토노 요리토모', group: 'main', img: getImgUrl('MYT'), 
+              short: '가마쿠라도노 · 겐지의 동량', 
+              desc: '40세. 타이라 가문을 멸문시키고 무사들의 정권인 가마쿠라 막부의 기틀을 다지고 있는 겐지의 동량. 통칭 가마쿠라도노.<br><br>1185년, 아우 요시츠네의 압도적인 무공에 힘입어 오랜 전쟁에서 최종 승리를 거두었으나, 형의 허락 없이 조정의 벼슬을 받아든 아우를 가문의 통제를 벗어난 위험 분자로 간주했다. 무사 세력을 견제하려는 조정의 이간질과 냉혹한 권력의 생리 속에서, 그는 결국 혈육의 정을 버리기로 결단했다. 1187년 현재, 요시츠네를 내놓으라는 압박을 오슈에 가하며 잠재적 위협을 철저히 짓밟으려 하고 있다.' },
+            { id: 'MYC', name: '미나모토노 요시츠네', group: 'main', img: getImgUrl('MYC'), 
+              short: '요리토모의 이복아우 · 쿠로', 
+              desc: '28세. 타이라 가문을 무너뜨리는 데 가장 거대한 공을 세운 반군의 맹장이자 천재적인 전술가. 통칭 쿠로.<br><br>전장에서 그 누구보다 찬란하게 빛났으나, 정치적 판단력의 부재로 인해 조정이 내린 관직을 덥석 받아들이며 형 요리토모의 분노를 샀다. 겐지를 분열시키려던 조정의 정치적 의도에 완벽하게 휘말린 결과, 그는 하루아침에 구국의 영웅에서 가문을 배신한 쫓기는 역적으로 전락하고 말았다. 1187년 현재, 과거 자신을 거두어주었던 후지와라노 히데히라가 지배하는 오슈에 당도하여 위태로운 은거 생활을 이어가고 있다.' },
+            
+            // 요리토모 측 조연
+            { id: 'HM', name: '호죠 마사코', group: 'yoritomo', img: getImgUrl('HM'), 
+              short: '요리토모의 본처', 
+              desc: '30세. 이즈의 호족 호죠 토키마사의 딸. 타이라에 의해 죄인의 신분으로 유배되어 있던 젊은 요리토모와 혼인하여 가마쿠라 막부 창업의 거대한 발판을 마련해준 일등 공신.<br><br>요리이에와 유즈하의 어머니이며, 단순한 아내를 넘어 요리토모의 정치적 동반자로서 어소 내외에 막대한 영향력을 행사하고 있다.' },
+            { id: 'HYT', name: '호죠 요시토키', group: 'yoritomo', img: getImgUrl('HYT'), 
+              short: '요리토모의 처남', 
+              desc: '24세. 마사코의 남동생. 통칭 에마 도노.<br><br>요리토모의 곁에서 거병 초기부터 참전하여 공을 세웠다. 현재 이즈국 에마 지역을 다스리며, 막부 내 첩보 조직을 굴려 가마쿠라의 정보망을 관리하고 있다. 매형인 요리토모의 깊은 신임을 받으며 호죠 가문의 권력을 다지는 중이다.' },
+            { id: 'HT', name: '호죠 토키마사', group: 'yoritomo', img: getImgUrl('HT'), 
+              short: '요리토모의 장인', 
+              desc: '49세. 유배자였던 요리토모를 사위로 맞아들여 겐지 거병의 첫 단추를 꿴 호죠 가문의 당주. 통칭 호죠 도노.<br><br>요리토모의 장인으로서 막부 개창의 든든한 기반이 되었으나, 젊은 후처 마키 스미코를 맞이한 후 그녀가 낳을 아들을 가문의 후계자로 삼기 위해 장성한 요시토키를 분가시키는 등 권력 구도에 기민하게 움직이고 있다.' },
+            { id: 'MN', name: '미나모토노 노리요리', group: 'yoritomo', img: getImgUrl('MN'), 
+              short: '요리토모의 이복아우', 
+              desc: '37세. 요리토모와 요시츠네의 이복형제. 통칭 카바 도노.<br><br>천재적이나 가마쿠라의 통제를 벗어난 요시츠네와 달리, 요리토모의 명령에 철저히 순종하여 전쟁의 주요 장수로 활약했다. 반역자로 몰린 요시츠네와 대조적으로 가마쿠라의 충실한 장수로 확고한 입지를 다지고 있다.' },
+            { id: 'MYH', name: '미나모토노 유즈하', group: 'yoritomo', img: getImgUrl('MYH'), 
+              short: '요리토모의 장녀', 
+              desc: '9세. 요리토모와 마사코 사이에서 태어난 첫째 딸.<br><br>과거 아버지 요리토모가 정적을 제거하는 숙청의 과정에서, 약혼자가 무참히 살해당하는 비극을 겪었다.' },
+            { id: 'MYI', name: '미나모토노 요리이에', group: 'yoritomo', img: getImgUrl('MYI'), 
+              short: '요리토모의 장남', 
+              desc: '5세. 전쟁이 한창이던 시기에 태어난 요리토모의 적장자.<br><br>유력 고케닌인 히키 일족을 유모 가문으로 두고 성장하고 있으며, 가마쿠라 정권을 이어받을 확고한 차기 후계자이다.' },
+            { id: 'KKT', name: '카지와라 카게토키', group: 'yoritomo', img: getImgUrl('KKT'), 
+              short: '요리토모의 심복 · 사무라이도코로의 시소', 
+              desc: '47세. 과거 요리토모가 거병 직후 패배해 위기에 처했을 때, 적장의 신분임에도 그를 눈감아주어 목숨을 구명해 준 인물. 이후 요리토모의 광신적인 심복이 되었다.<br><br>무사들을 통제하는 기관인 사무라이도코로의 차관 격인 시소 자리에 앉아있으며, 전장에서 요시츠네와 번번이 대립한 끝에 요리토모에게 그를 강력히 참소하여 형제자매 간의 파탄을 초래한 장본인이다.' },
+            { id: 'WY', name: '와다 요시모리', group: 'yoritomo', img: getImgUrl('WY'), 
+              short: '요리토모의 가신 · 사무라이도코로의 벳토', 
+              desc: '40세. 미우라 일족 출신의 유력한 고케닌.<br><br>가마쿠라 거병 초기부터 활약했으며, 무사들을 통솔하고 형사 재판을 담당하는 군사 기구 \'사무라이도코로\'의 설립을 건의한 공으로 그 최고 책임자인 벳토의 자리에 올랐다.' },
+            { id: 'HST', name: '하타케야마 시게타다', group: 'yoritomo', img: getImgUrl('HST'), 
+              short: '요리토모의 가신 · 요시토키의 막역지우', 
+              desc: '23세. 본래 타이라 측에 섰으나 곧바로 요리토모에게 귀순하여 숱한 전투에서 뛰어난 활약을 펼친 맹장.<br><br>호죠 요시토키와 막역한 사이이며, 단정하고 올곧은 처신으로 가마쿠라 무사들의 모범으로 평가받는 유력 고케닌이다.' },
+            { id: 'HYK', name: '히키 요시카즈', group: 'yoritomo', img: getImgUrl('HYK'), 
+              short: '요리토모의 가신 · 요리이에의 유모부', 
+              desc: '39세. 요리토모의 유모였던 히키노아마의 양자이자, 가마쿠라의 후계자인 요리이에의 유모부.<br><br>차기 권력의 최측근이라는 막강한 지위를 바탕으로 가마쿠라 어소 내부에서 거대한 세력을 형성하고 있다.' },
+            { id: 'MS', name: '마키 스미코', group: 'yoritomo', img: getImgUrl('MS'), 
+              short: '토키마사의 후처', 
+              desc: '22세. 호죠 토키마사의 젊은 계실.<br><br>장성한 마사코와 요시토키의 계모가 되며, 자신이 낳은 아들을 호죠 가문의 차기 당주로 세우고자 하는 뚜렷한 정치적 야망을 품고 막부 내외의 정세에 관여하고 있다.' },
+
+            // 요시츠네 측 조연
+            { id: 'MB', name: '무사시보 벤케이', group: 'yoshitsune', img: getImgUrl('MB'), 
+              short: '요시츠네의 부하 · 괴력의 승병', 
+              desc: '32세. 과거 교토에서 요시츠네에게 패배한 후 주종 관계를 맺고 절대적인 충성을 바쳐온 승병.<br><br>전쟁 중 요시츠네의 곁을 지키며 활약했다. 요시츠네가 역적으로 몰린 현재에도 변함없이 그를 호위하여 가마쿠라의 추토를 피해 오슈 타카다치로 함께 피신했다.' },
+            { id: 'IY', name: '이세 요시모리', group: 'yoshitsune', img: getImgUrl('IY'), 
+              short: '요시츠네의 부하 · 지략가', 
+              desc: '26세. 미나모토노 요시츠네가 거병을 위해 오슈에서 출발할 무렵부터 합류해 그를 모셔온 측근.<br><br>전쟁 내내 참전하여 공을 세웠다. 현재는 몰락한 주군을 따라 오슈로 도망친 상태이며, 밀정들을 부려 요시츠네 주변의 정보망을 관리하고 호위하는 역할을 수행하고 단속하고 있다.' },
+            { id: 'HH', name: '후지와라노 히데히라', group: 'yoshitsune', img: getImgUrl('HH'), 
+              short: '북방의 패자 · 오슈의 왕', 
+              desc: '65세. 조정과 가마쿠라의 통제력이 닿지 않는 거대한 북방 지역, 오슈 무츠국을 독자적으로 지배하는 오슈 후지와라 씨의 당주.<br><br>과거 교토에서 도망쳐 온 어린 요시츠네를 보호하고 길러준 은인이다. 요시츠네가 가마쿠라의 적으로 전락한 1187년 현재, 무력 충돌의 위험을 감수하면서까지 그를 다시 거두어들여 보호하고 있다.' },
+            { id: 'HK', name: '후지와라노 쿠니히라', group: 'yoshitsune', img: getImgUrl('HK'), 
+              short: '히데히라의 서자', 
+              desc: '37세. 오슈의 지배자 히데히라의 첫째 아들로 태어났으나, 서출이라는 신분적 한계 탓에 가문의 적통 후계자가 되지 못한 인물.<br><br>뛰어난 무위와 통솔력을 갖춘 실력주의자로, 가마쿠라에 대항해 요시츠네를 보호하려는 아버지의 행보에 우호적인 입장을 취하고 있다.' },
+            { id: 'HY', name: '후지와라노 야스히라', group: 'yoshitsune', img: getImgUrl('HY'), 
+              short: '히데히라의 적자', 
+              desc: '32세. 히데히라의 차남이나 적장자로서 오슈 후지와라 씨의 차기 당주 자리에 내정된 후계자.<br><br>요시츠네를 내놓으라는 가마쿠라의 군사적, 정치적 압박이 나날이 거세지는 상황 속에서, 무리하게 그를 감싸며 막부와 척을 지는 아버지의 선택에 깊은 불안감과 위기감을 느끼고 있다.' },
+            { id: 'HS', name: '후지와라노 사에코', group: 'yoshitsune', img: getImgUrl('HS'), 
+              short: '히데히라의 딸', 
+              desc: '20세. 히데히라의 딸이자 쿠니히라, 야스히라의 여동생.<br><br>막강한 군사력을 지닌 가마쿠라 세력과 도망자 요시츠네를 품은 오슈의 세력이 팽팽하게 대립각을 세우기 시작한 1187년, 오슈 정세의 한가운데에 놓여 있다.' },
+
+            // 조정 측 조연
+            { id: 'MH', name: '고시라카와 법황', group: 'court', img: getImgUrl('MH'), 
+              short: '조정의 실질적 권력자', 
+              desc: '60세. 천황의 자리에서 물러난 후에도 인세이를 통해 조정의 실권을 틀어쥐고 막후에서 국정을 조종하는 교토의 지배자.<br><br>요시츠네의 무력을 이용해 타이라를 멸망시켰으나, 요리토모의 허락 없이 요시츠네에게 관직을 내려 형제간의 분열을 유도했다. 가마쿠라의 무사들이 연합하는 것을 극도로 경계하며, 치밀한 이간계로 무사 세력의 분열을 획책하고 있다.' },
+            { id: 'TN', name: '고토바 천황', group: 'court', img: getImgUrl('TN'), 
+              short: '교토의 어린 군주', 
+              desc: '7세. 안토쿠 천황이 타이라 가문과 함께 삼종신기를 들고 서국으로 도망치자, 고시라카와 법황의 주도하에 새롭게 옹립된 어린 천황.<br><br>나이가 매우 어리기에 조정의 모든 실질적인 정치적 결정권은 막후의 고시라카와 법황에게 쥐어져 있다.' },
+            { id: 'TY', name: '타카시나 요시코', group: 'court', img: getImgUrl('TY'), 
+              short: '법황의 심복', 
+              desc: '36세. 고시라카와 법황의 깊은 총애를 받는 여관. 통칭 탄고노츠보네.<br><br>권모술수가 난무하는 교토 조정에서 막강한 발언권을 쥐고 있으며, 무사 세력인 가마쿠라와의 긴장감 넘치는 정치적 교섭을 일선에서 전담하고 있다.' },
+            { id: 'KKJ', name: '쿠죠 카네자네', group: 'court', img: getImgUrl('KKJ'), 
+              short: '조정의 좌대신 · 친가마쿠라파 공경', 
+              desc: '38세. 전통적인 섭관가 출신의 유력한 귀족이자 조정의 좌대신.<br><br>법황의 변덕스럽고 파괴적인 정치 공작에 회의감을 느끼고 있으며, 무사 세력의 정점인 가마쿠라의 요리토모와 협력하여 교토의 정국을 현실적으로 안정시키려 노력하고 있다.' }
+        ];
+
+        // ------------------ [지역 데이터] ------------------
+        const regionsData = [
+            { name: '오슈 (奥州)', desc: '일본 혼슈 도호쿠 일대를 일컫는 지명. 풍부한 사금과 명마를 바탕으로 막대한 부와 독자적인 군사력을 구축한 오슈 후지와라 씨의 영지. 수도는 히라이즈미. 1187년 당시 교토 조정과 가마쿠라의 통제력이 닿지 않는 거대한 독자적 세력권으로, 히데히라가 지배하고 있으며 쫓기는 요시츠네의 도피처가 된 곳.' },
+            { name: '가마쿠라 (鎌倉)', desc: '요리토모가 거병 후 본거지로 삼은 간토 지방의 요충지. 삼면이 산으로 둘러싸여 있고 한 면이 바다와 접해 있어 방어에 유리한 천혜의 요새. 교토 조정의 음모와 귀족 정치에서 벗어나, 무사들의 독자적인 통치와 새로운 법률이 움트는 정치적 중심지다.' },
+            { name: '교토 (京都)', desc: '일본의 왕조가 도읍으로 삼은 수도이자 전통적인 정치·문화의 중심지. 명목상 통치자인 천황과 막후의 실권자인 고시라카와 법황이 머무는 곳으로, 화려한 귀족 문화 이면에 치밀한 권모술수와 핏빛 암투가 소용돌이치는 정국이다.' }
+        ];
+
+        // ------------------ [용어 데이터 (카테고리 분류)] ------------------
+        const termsData = [
+            { 
+                category: '세력 및 일족', 
+                items: [
+                    { name: '타이라 (平)', desc: '헤이안 시대 말기 무사 정권의 선구자로 일본 열도를 장악했던 가문. 타이라노 키요모리 대에 이르러 외척으로서 조정의 실권을 장악하고 부귀영화를 누렸으나, 교만과 독재로 인해 안팎의 원한을 샀다. 결국 미나모토노 요리토모가 이끄는 겐지 세력에게 단노우라 전투에서 완패하며 멸문지화를 당했다.' },
+                    { name: '겐지 (源)', desc: '본래 황실에서 신하로 강등되며 부여받은 성씨 중 하나. 타이라 가문을 토벌하고 새로운 무사 정권의 중심이 된 미나모토 일족을 통틀어 이르는 말. 특히 요리토모와 요시츠네 형제가 속한 카와치 겐지가 그 중심에 서며 무사들의 동량으로 군림하게 되었다.' }
+                ]
+            },
+            { 
+                category: '신분 및 호칭', 
+                items: [
+                    { name: '도노 (殿)', desc: '\'~공\'과 같이, 자신보다 신분이나 지위가 높은 사람 혹은 존중해야 할 귀족이나 유력 무사를 부를 때 이름이나 관직 뒤에 붙이는 경칭.' },
+                    { name: '고케닌 (御家人)', desc: '주군인 가마쿠라도노와 주종 관계를 맺고 충성을 맹세한 가마쿠라 막부의 직속 가신. 요리토모로부터 영지의 지배권을 보장받거나 새롭게 토지를 하사받은 대신, 전시에 군사를 일으키고 막부와 교토의 경비 등을 담당할 의무를 지닌 무사들이다.' },
+                    { name: '공경 (公卿)', desc: '천황을 측근에서 모시는 교토 조정의 최고위 귀족들을 이르는 말. 국정을 심의하고 결정하는 핵심 관직자들로, 황족을 제외한 귀족 사회의 최상위 계층을 형성한다.' },
+                    { name: '동량 (棟梁)', desc: '본래 건물의 지붕을 받치는 중심 기둥을 뜻하는 말. 무사 사회에서는 한 일족이나 거대한 무사단 전체를 이끌고 통솔하는 최고 지도자이자 우두머리를 의미한다.' }
+                ]
+            },
+            { 
+                category: '막부 기구', 
+                items: [
+                    { name: '사무라이도코로 (侍所)', desc: '1180년 거병 직후 무사들의 통솔을 위해 가장 먼저 설치된 막부의 중추 군사 기구. 고케닌들의 참전 명부 관리, 군기 확립, 형사 재판 및 경찰 권한을 독점했다. 무사들을 철저히 통제하기 위한 핵심 기관.' }
+                ]
+            },
+            { 
+                category: '장소', 
+                items: [
+                    { name: '가마쿠라 어소 (鎌倉御所)', desc: '요리토모와 마사코 부부의 거처이자, 가마쿠라 막부의 최고 의결이 이루어지는 권력의 심장부. 유력 고케닌들의 정무 회의, 은밀한 면담, 막부 밀정들의 첩보 보고 등 무사 정권의 모든 중대사와 음모가 얽히고설키는 중심 공간이다.' },
+                    { name: '교토 어소 (京都御所)', desc: '일본의 명목상 통치자인 천황, 그리고 실권자인 고시라카와 법황이 머무는 황궁. 겉으로는 화려하고 우아한 귀족 문화의 온상이지만, 실상은 치밀한 권모술수와 핏빛 암투가 끊이지 않는 곳이다.' },
+                    { name: '타카다치 (高館)', desc: '교토에서 쫓겨난 요시츠네 일행이 오슈 히라이즈미에 당도한 후 머물게 된 저택이자 은거지. 키타카미 강이 내려다보이는 구릉지 위에 요새처럼 자리 잡고 있다.' }
+                ]
+            },
+            { 
+                category: '주요 사건', 
+                items: [
+                    { name: '헤이지의 난 (平治の乱)', desc: '타이라 가문이 겐지 세력을 무너뜨리고 조정의 실권을 장악하게 된 권력 투쟁. 이 사건으로 겐지는 몰락하여 요리토모는 이즈로 유배되고, 어린 요시츠네는 절에 맡겨지는 등 겐지 일족의 기나긴 시련이 시작되었다.' },
+                    { name: '겐페이 합전 (源平合戦)', desc: '일본 열도의 패권을 두고 벌어진 겐지와 타이라 두 무사 가문 간의 거대한 내전. 1180년 요리토모의 거병으로 시작되어 약 5년간 이어졌으며, 이 전쟁에서 겐지가 최종 승리하며 타이라 일족을 멸망시키고 가마쿠라 막부라는 새로운 무사 정권이 탄생하는 계기가 되었다.' },
+                    { name: '단노우라 해전 (壇ノ浦の戦い)', desc: '겐페이 합전의 종지부를 찍은 최후의 해전. 천재적인 전술가 요시츠네의 맹공에 궁지에 몰린 타이라 일족은 결국 어린 안토쿠 천황 및 삼종신기와 함께 바다에 몸을 던져 장렬한 멸문지화를 맞이했다.' }
+                ]
+            }
+        ];
+
+        // ------------------ [데이터 렌더링] ------------------
+        window.onload = () => {
+            // 1. 인물 렌더링
+            characters.forEach((char, index) => {
+                const cardHTML = `
+                    <div class="char-card" onclick="openModal(${index})">
+                        <img src="${char.img}" alt="${char.name}" class="char-img">
+                        <div class="char-info">
+                            <h3 class="char-name">${char.name}</h3>
+                            <p class="char-short">${char.short}</p>
+                        </div>
+                    </div>
+                `;
+                
+                if(char.group === 'main') document.getElementById('main-chars').innerHTML += cardHTML;
+                else if(char.group === 'yoritomo') document.getElementById('sub-chars-yoritomo').innerHTML += cardHTML;
+                else if(char.group === 'yoshitsune') document.getElementById('sub-chars-yoshitsune').innerHTML += cardHTML;
+                else if(char.group === 'court') document.getElementById('sub-chars-court').innerHTML += cardHTML;
+            });
+
+            // 2. 지역 렌더링
+            const regionsContainer = document.getElementById('regions-container');
+            regionsData.forEach(region => {
+                regionsContainer.innerHTML += `
+                    <div class="term-card">
+                        <h3 class="term-name">${region.name}</h3>
+                        <p class="term-desc">${region.desc}</p>
+                    </div>
+                `;
+            });
+
+            // 3. 용어 렌더링 (카테고리별)
+            const termsContainer = document.getElementById('terms-container');
+            termsData.forEach(group => {
+                termsContainer.innerHTML += `<h2 class="group-title">${group.category}</h2>`;
+                group.items.forEach(term => {
+                    termsContainer.innerHTML += `
+                        <div class="term-card">
+                            <h3 class="term-name">${term.name}</h3>
+                            <p class="term-desc">${term.desc}</p>
+                        </div>
+                    `;
+                });
+            });
+        };
+
+        // ------------------ [동작 로직] ------------------
+        function switchTab(tabId) {
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function openModal(index) {
+            const char = characters[index];
+            document.getElementById('modal-img').src = char.img;
+            document.getElementById('modal-name').textContent = char.name;
+            document.getElementById('modal-short').textContent = char.short;
+            document.getElementById('modal-desc').innerHTML = char.desc;
+            
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if(event.target.id === 'modal-overlay') {
+                document.getElementById('modal-overlay').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
